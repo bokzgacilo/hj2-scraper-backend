@@ -104,39 +104,11 @@ app.post('/check', async (req, res) => {
     console.error(error);
     res.status(500).send('Error running Selenium instances');
   }
-  // const options = new chrome.Options();
-  // options.addArguments('--headless', '--disable-gpu', '--no-sandbox', '--disable-dev-shm-usage', '--log-level=3', '--silent');
-  // const driver = await new Builder().forBrowser('chrome').setChromeOptions(options).build();
-
-  // const url = req.body.url;
-
-  // try {
-  //   await withTimeout(driver.get(`https://${url}`), 15000);
-  //   await withTimeout(driver.wait(async () => {
-  //     const readyState = await driver.executeScript('return document.readyState');
-  //     return readyState === 'complete';
-  //   }, 7000), 15000);
-
-  //   const pageSource = await driver.getPageSource();
-  //   fs.writeFileSync(`./temp/www.txt`, pageSource, 'utf8');
-  //   console.log('Website content saved to /temp/www.txt');
-
-  //   const wordsToSearch = ['pid', 'eid', 'sid', 'isml', 'pipeline', 'ajax', 'res.render', 'pt_storefront', 'Home-Show'];
-  //   const foundWords = searchWordsInFile(`./temp/www.txt`, wordsToSearch);
-
-  //   res.send({ message: url, foundWords });
-  // } catch (error) {
-  //   console.error('Error:', error.message);
-  //   res.status(500).send({ error: `Failed to fetch URL: ${url}. Error: ${error.message}` });
-  // } finally {
-  //   await driver.quit();
-  // }
 });
 
-// Function to create a single Selenium instance
 async function createDriverInstance(keywordArray, url, instanceNumber) {
   const options = new chrome.Options();
-  options.addArguments('--headless', '--disable-gpu', '--no-sandbox', '--disable-dev-shm-usage', '--log-level=3', '--silent');
+  options.addArguments('--headless','--disable-gpu', '--no-sandbox', '--disable-dev-shm-usage', '--log-level=3', '--disable-extensions', '--disable-background-timer-throttling');
 
   let driver = await new Builder()
     .forBrowser('chrome')
@@ -146,11 +118,12 @@ async function createDriverInstance(keywordArray, url, instanceNumber) {
   try {
     console.log(`Instance ${instanceNumber} running`);
 
-    await withTimeout(driver.get(`https://${url}`), 15000);
+    await withTimeout(driver.get(`https://${url}`), 20000);
+
     await withTimeout(driver.wait(async () => {
       const readyState = await driver.executeScript('return document.readyState');
       return readyState === 'complete';
-    }, 7000), 15000);
+    }, 10000), 20000);
 
     const pageSource = await driver.getPageSource();
     const wordsToSearch = keywordArray;
@@ -165,8 +138,8 @@ async function createDriverInstance(keywordArray, url, instanceNumber) {
     console.log(`Instance ${instanceNumber} closed`);
   }
 }
-// Route to verify the server is running
-app.get('/', (req, res) => res.send({ status: 'ok' }));
 
-// Start the server
+app.get('/', (req, res) => res.send({ status: 'ok' }));
+app.get('/test', (req, res) => res.send({ status: 'test ok' }));
+
 app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
